@@ -1,3 +1,3 @@
-# [Game Title]
+# Slicer
 
-Yes
+http://localhost:4000/?slicer
