@@ -6,8 +6,8 @@ description = `Cut up your\nenemies!
 characters = [];
 
 const G = {
-    WIDTH: 200,
-    HEIGHT: 200,
+    WIDTH: 150,
+    HEIGHT: 150,
     ENEMY_SIZE: 5
 };
 
@@ -60,6 +60,7 @@ function update() {
         enemy_speed = 1;
     }
 
+    // enemy creation
     if (right_enemies.length < 8) {
         const posX = G.WIDTH + rnd(0, G.WIDTH);
         const posY = rnd(0, G.HEIGHT);
@@ -71,6 +72,7 @@ function update() {
         left_enemies.push({ pos: vec(posX, posY) });
     }
 
+    // player handling
     player.pos = input.pos;
     player.pos.clamp(0, G.WIDTH, 0, G.HEIGHT);
     color("light_blue");
@@ -94,11 +96,12 @@ function update() {
     arc(
         player.pos,
         ROTATION_DISTANCE,
-        2,
+        3,
         ticks / ROTATION_SPEED,
         ticks / ROTATION_SPEED + PI / 3
     );
 
+    // enemy handling
     remove(right_enemies, (e) => {
         e.pos.x -= enemy_speed;
         color("purple");
