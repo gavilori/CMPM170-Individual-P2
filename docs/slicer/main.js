@@ -13,6 +13,7 @@ const G = {
 
 options = {
     viewSize: { x: G.WIDTH, y: G.HEIGHT },
+    theme: "dark"
 };
 
 /**
@@ -129,9 +130,11 @@ function update() {
         const isCollidingWithSlicer = enemy.isColliding.rect.light_red;
 
         if (isCollidingWithPlayer) {
+            play("hit");
             end();
         }
         if (isCollidingWithSlicer) {
+            play("laser");
             color("red");
             particle(e.pos)
             addScore(1, e.pos);
