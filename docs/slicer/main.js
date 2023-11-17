@@ -13,7 +13,8 @@ const G = {
 
 options = {
     viewSize: { x: G.WIDTH, y: G.HEIGHT },
-    theme: "dark"
+    theme: "dark",
+    isPlayingBgm: true
 };
 
 /**
@@ -58,7 +59,7 @@ function update() {
         left_enemies = [];
         right_enemies = [];
         slice = 100;
-        enemy_speed = 1;
+        enemy_speed = 0.5;
     }
 
     // enemy creation
@@ -102,6 +103,13 @@ function update() {
         ticks / ROTATION_SPEED + PI / 3
     );
 
+    // difficulty scaling
+    if (ticks !== 0 && ticks % 600 === 0) {
+        enemy_speed += 0.1;
+        addScore(5, player.pos);
+        play("coin");
+    }
+
     // enemy handling
     remove(right_enemies, (e) => {
         e.pos.x -= enemy_speed;
@@ -111,9 +119,11 @@ function update() {
         const isCollidingWithSlicer = enemy.isColliding.rect.light_red;
 
         if (isCollidingWithPlayer) {
+            play("hit");
             end();
         }
         if (isCollidingWithSlicer) {
+            play("laser");
             color("red");
             particle(e.pos)
             addScore(1, e.pos);
@@ -143,6 +153,7 @@ function update() {
         return (isCollidingWithSlicer || e.pos.x > G.WIDTH + G.ENEMY_SIZE);
     });
 
+    // text
     color("black");
-    text(slice.toString() + "/100", 5, G.HEIGHT-5);
+    text(slice.toString() + "/100", 5, G.HEIGHT - 5);
 }
