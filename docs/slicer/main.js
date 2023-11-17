@@ -6,12 +6,13 @@ description = `Cut up your\nenemies!
 characters = [];
 
 const G = {
-  WIDTH: 100,
-  HEIGHT: 100,
+    WIDTH: 200,
+    HEIGHT: 200,
+    ENEMY_SIZE: 5
 };
 
 options = {
-  viewSize: { x: G.WIDTH, y: G.HEIGHT },
+    viewSize: { x: G.WIDTH, y: G.HEIGHT },
 };
 
 /**
@@ -39,59 +40,103 @@ let left_enemies;
  * @type { Enemy [] }
  */
 let right_enemies;
-/**
- * @type { Enemy [] }
- */
-let up_enemies;
-/**
- * @type { Enemy [] }
- */
-let down_enemies;
+
+let enemy_speed;
 
 const ROTATION_DISTANCE = 12;
-const ROTATION_SPEED = 10;
+const ROTATION_SPEED = 8;
 
-let slice_start, slice_end;
+let slice;
 
 function update() {
-  if (!ticks) {
-    player = {
-      pos: vec(G.WIDTH * 0.5, G.HEIGHT * 0.5),
-    };
+    if (!ticks) {
+        player = {
+            pos: vec(G.WIDTH * 0.5, G.HEIGHT * 0.5),
+        };
 
-    left_enemies = [];
-    right_enemies = [];
-    up_enemies = [];
-    down_enemies = [];
-  }
-  if (right_enemies.length === 0) {
-    for (let i = 0; i < 10; i++) {
-      const posX = G.WIDTH + rnd(0, G.WIDTH);
-      const posY = rnd(0, G.HEIGHT);
-      right_enemies.push({ pos: vec(posX, posY) });
+        left_enemies = [];
+        right_enemies = [];
+        slice = 100;
+        enemy_speed = 1;
     }
-  }
 
-  player.pos = input.pos;
-  color("light_blue");
-  box(player.pos, 4);
+    if (right_enemies.length < 8) {
+        const posX = G.WIDTH + rnd(0, G.WIDTH);
+        const posY = rnd(0, G.HEIGHT);
+        right_enemies.push({ pos: vec(posX, posY) });
+    }
+    if (left_enemies.length < 8) {
+        const posX = -rnd(0, G.WIDTH);
+        const posY = rnd(0, G.HEIGHT);
+        left_enemies.push({ pos: vec(posX, posY) });
+    }
 
-  if (input.isJustPressed) {
-    slice_start = 0;
-  }
-  if (input.isPressed) {
-    color("light_red");
-  } else {
-    color("light_black");
-  }
+    player.pos = input.pos;
+    player.pos.clamp(0, G.WIDTH, 0, G.HEIGHT);
+    color("light_blue");
+    box(player.pos, 4);
 
-  //   arc(player.pos, ROTATION_DISTANCE, 1);
-  //   box(test_x, test_y, 2);
-  arc(
-    player.pos,
-    ROTATION_DISTANCE,
-    2,
-    ticks / ROTATION_SPEED,
-    ticks / ROTATION_SPEED + PI / 4
-  );
+    if (input.isPressed) {
+        if (slice > 0) {
+            color("light_red");
+            slice -= 1;
+        } else {
+            color("light_black");
+        }
+    } else {
+        if (slice < 100) {
+            slice += 1;
+        }
+        color("light_black");
+    }
+
+    // slicer graphic
+    arc(
+        player.pos,
+        ROTATION_DISTANCE,
+        2,
+        ticks / ROTATION_SPEED,
+        ticks / ROTATION_SPEED + PI / 3
+    );
+
+    remove(right_enemies, (e) => {
+        e.pos.x -= enemy_speed;
+        color("purple");
+        const enemy = box(e.pos, G.ENEMY_SIZE);
+        const isCollidingWithPlayer = enemy.isColliding.rect.light_blue;
+        const isCollidingWithSlicer = enemy.isColliding.rect.light_red;
+
+        if (isCollidingWithPlayer) {
+            end();
+        }
+        if (isCollidingWithSlicer) {
+            color("red");
+            particle(e.pos)
+            addScore(1, e.pos);
+        }
+
+        return (isCollidingWithSlicer || e.pos.x < -G.ENEMY_SIZE);
+    });
+
+    remove(left_enemies, (e) => {
+        e.pos.x += enemy_speed;
+        color("purple");
+        const enemy = box(e.pos, G.ENEMY_SIZE);
+        const isCollidingWithPlayer = enemy.isColliding.rect.light_blue;
+        const isCollidingWithSlicer = enemy.isColliding.rect.light_red;
+
+        if (isCollidingWithPlayer) {
+            end();
+        }
+        if (isCollidingWithSlicer) {
+            color("red");
+            particle(e.pos)
+            addScore(1, e.pos);
+        }
+
+        return (isCollidingWithSlicer || e.pos.x > G.WIDTH + G.ENEMY_SIZE);
+    });
+
+    color("black");
+    text(slice.toString() + "/100", 5, G.HEIGHT-5);
 }
